@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">TourGuideDrone</string>
+
+    <string-array name="destinationList">
+        <item>Stevens Student Center</item>
+        <item>Dixon Ministry Center</item>
+        <item>Center for Biblical and Theological Studies</item>
+        <item>Engineering and Science Center</item>
+        <item>Health and Science Center</item>
+    </string-array>
+
+</resources>
