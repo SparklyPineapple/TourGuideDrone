@@ -27,6 +27,7 @@
         android:layout_marginStart="36dp"
         android:layout_marginLeft="36dp"
         android:layout_marginTop="85dp"
+        android:onClick="countDownTimer"
         android:text="Start"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -64,7 +65,7 @@
         android:layout_marginRight="32dp"
         android:layout_marginBottom="16dp"
         android:text="Emergancy Land"
-        app:layout_constraintBottom_toTopOf="@+id/textView5"
+        app:layout_constraintBottom_toTopOf="@+id/debugTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
@@ -88,7 +89,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <TextView
-        android:id="@+id/textView5"
+        android:id="@+id/debugTextView"
         android:layout_width="372dp"
         android:layout_height="207dp"
         android:layout_marginStart="36dp"
