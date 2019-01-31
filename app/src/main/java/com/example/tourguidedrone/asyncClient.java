@@ -21,18 +21,20 @@ public class asyncClient extends AsyncTask<Void, String, String> {
    // private gps object ? //TODO see to-do near constructor
     private double destLat = 0;
     private double destLong = 0;
+    private TextView gpsTextView;
 
 
     //thread functions-----------------------------------------------------------------------------------
     //gui objects that async reads or writes from must be in constructor parameters
-    //TODO pass in object that can update current phone GPS location
-    asyncClient(TextView gpsTextView, GpsStatus gpsStatus, String IP, int portN, double destLat, double destLong, TextView debugTextView ){
+    //TODO pass in object that can update current phone GPS location, this could actually be checked
+    asyncClient(TextView gpsTextView, GpsStatus gpsStatus, String IP, int portN, String destString, TextView debugTextView ){
 
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        //todo parse destString and use to initialize destLat and destLon <-- could also be done in constructor or main activity
     }
 
     @Override
@@ -41,7 +43,10 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
         String printMessage = readFromSocket();
 
-        sendSocketData(" "); //TODO set up timer loop
+        sendSocketData(" ");
+
+        //TODO set up timer loop, make sure to receive an acknowledge before sending next value
+        publishProgress("String for GPS", "String for received socket Messages");
 
         try {
             socket.close();
@@ -55,16 +60,19 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
     @Override
     protected void onProgressUpdate(String...progress){
-        //this method may take several seconds to complete
-
+        //this method may take several seconds to complete <--Android Studios
+        String gpsString = progress[0];
+        String receivedSocketMessage = progress[1];
     }
 
     @Override
     protected void onPostExecute(String printMessage){
+        //not used for now, thread will be cancelled
     }
 
     @Override
     protected void onCancelled(){
+        //todo update debugTV
 
     }
 
