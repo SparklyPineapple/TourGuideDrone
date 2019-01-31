@@ -4,12 +4,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     //class variables
     private boolean isTraveling = false;
-    private String destinationString = "you should never see me";
+    private String destinationString = "you should never see me in this form :) destination string";
     protected Spinner selectDestList;// = findViewById(R.id.selectDestList);
 
     //socket communcation: phone to pi
@@ -29,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private int droneVelocity = 0;
     private int droneHeading = 0;
 
-
+    //set up text editing for "debugtext
+    TextView debugTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +47,14 @@ public class MainActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_dropdown_item, destListString);
         selectDestList.setAdapter(selectDestListAdapter);
 
+
+
     }
 
-    protected void selectStartButton(){
+    public void selectStartButton(){
 
-        //1.freeze dropdown list so that destination cannot be changed, freeze start button two --TODO
-
-
-
+        //1.freeze dropdown list so that destination cannot be changed, freeze start button two
+        //TODO - lesser priority
         //2.check to see what value is chosen in dropdown list & set destination variable
         destinationString = selectDestList.getSelectedItem().toString();
         //3.set isTraveling to true
@@ -61,10 +63,38 @@ public class MainActivity extends AppCompatActivity {
         start = true;
         stop = false;
         emergencyLand = false;
-        //5. unfreeze emergency landing and stop button --TODO
+        //5. unfreeze emergency landing and stop button (change color to show unusable)
+        //TODO - lesser priority
+        //6. start the socket and attempt to connect with server
+        //TODO - cant be done until ailin is ready :)
 
+        //clear out debug stuff
+        debugTextView.setText("START BUTTON PRESSED" + "\n" + "DESTINATION = ....");
     }
 
+    public void selectStopButton(){
+        //1. send stocket stop = true
+        stop = true;
+        //2. say "stopped" on a status bar or something (for debugging)
+        debugTextView.append("\n" + "STOP PRESSED. app functionality halted");
+        //3. set isTraveling = false
+        isTraveling = false;
+        //4. unfreeze dropdown (fix back color)
+        //TODO - lesser priority
+        //5. close connection with socket
+        //TODO - cant be done until ailin is ready :)
+    }
+
+    ////////////////////////////try loop timer stuff :)
+
+
+    public void countDownTimer(){
+
+
+
+
+
+    }
 
 
     //For Future Use.....
