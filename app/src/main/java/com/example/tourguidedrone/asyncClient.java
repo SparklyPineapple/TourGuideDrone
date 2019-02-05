@@ -2,6 +2,7 @@ package com.example.tourguidedrone;
 
 import android.location.GpsStatus;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -19,9 +20,26 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private int portNum = -1;
     private TextView debugTextView;
    // private gps object ? //TODO see to-do near constructor
-    private double destLat = 0;
-    private double destLong = 0;
     private TextView gpsTextView;
+    private String receivedMessage = "string receivedMessage";
+    //socket communication: phone to pi
+    private double destLat = 0; //a table of mapping coord to dest is in phone if we do it this way. do we care? or do we want to do it all in the drone?
+    private double destLong = 0;
+    private double phoneLat = 0;
+    private double phoneLong = 0;
+    private boolean phoneStartTriggered = false; //referred to as start in the spreadsheet
+    private boolean phoneStopTriggered = false; //referred to as stop in the spreadsheet. renamed for clarification
+    private boolean emergencyLand = false;
+    //socket communication: pi to phone
+    private boolean ack = false;
+    private double droneLat = 0;
+    private double droneLong = 0;
+    private int droneAlt =0;
+    private int droneVelocity = 0;
+    private int droneHeading = 0;
+
+    //should get this from debugging from the drone????
+    private boolean drone_arrived = false; //kirby added since you want to stop when drone stops and drone GPS + phone GPS are different
 
 
     //thread functions-----------------------------------------------------------------------------------
@@ -39,14 +57,97 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
     @Override
     protected String doInBackground(Void...arg0){
+        boolean stopSocket = false;
+        drone_arrived = false;
+        emergencyLand = false;
+        phoneStopTriggered = false;
+
         openSocketClient(ipOfServer,portNum);
 
-        String printMessage = readFromSocket();
-
-        sendSocketData(" ");
-
         //TODO set up timer loop, make sure to receive an acknowledge before sending next value
-        publishProgress("String for GPS", "String for received socket Messages");
+        //TODO - what happens if no ack received? does it just wait. Do we need to send ack for sending????
+        //TODO - connect stop button to the boolean phoneStopTriggered
+        //TODO-getting GPS
+
+/*        while (!stopSocket) {
+            SystemClock.sleep(1000); //wait for 1 sec
+
+
+            //TODO get phones current GPS coordinates here and set values for class variables. output to debug txt
+            publishProgress("String for GPS", "");
+
+
+
+
+
+
+
+
+            //server sends ack after it reads something. wait for next ack before a new send
+            //send ack to pi the same way
+
+
+            //TODO check for ack before read. ASK AILIN HOW SHE HAS ACK SET UP + WHAT IT LOOKS LIKEs
+            //if ack then ....
+            //else wait for ack -------put this in read function? have a timer if ack not received after 5 sec then error
+            //do all acks in read?????
+
+            //ack
+            receivedMessage = readFromSocket();
+            ack = Boolean.valueOf(receivedMessage);
+            publishProgress("", receivedMessage);
+            //droneLat
+            String receivedMessage = readFromSocket();
+            droneLat = Double.valueOf(receivedMessage);
+            publishProgress("", receivedMessage);
+            //droneLong
+            receivedMessage = readFromSocket();
+            droneLong = Double.valueOf(receivedMessage);
+            publishProgress("", receivedMessage);
+            //droneAlt
+            receivedMessage = readFromSocket();
+            droneAlt = Integer.valueOf(receivedMessage);
+            publishProgress("", receivedMessage);
+            //droneVel
+            receivedMessage = readFromSocket();
+            droneVelocity = Integer.valueOf(receivedMessage);
+            publishProgress("", receivedMessage);
+            //droneHeading
+            receivedMessage = readFromSocket();
+            droneHeading = Integer.valueOf(receivedMessage);
+            publishProgress("", receivedMessage);
+
+
+            //TODO - possibly stuff w/ ack here to??????. send an ack?????
+            sendSocketData(String.valueOf(destLat));
+            sendSocketData(String.valueOf(destLong));
+            sendSocketData(String.valueOf(phoneLat));
+            sendSocketData(String.valueOf(phoneLong));
+            sendSocketData(String.valueOf(phoneStartTriggered));
+            sendSocketData(String.valueOf(phoneStopTriggered));
+            sendSocketData(String.valueOf(emergencyLand));
+
+
+
+
+            //publishProgress("String for GPS", "String for received socket Messages");
+            //if its a debug message then print to the debug txt in the UI
+
+            //TODO - check and see of the stop button has been pressed
+
+            //if button stop, emerg, stop or drone arrived then stop comm
+            if (phoneStopTriggered == true){
+                stopSocket = true;
+                publishProgress("", "Socket communcation stoped because: stop button pressed");
+            }else if (emergencyLand == true){
+                stopSocket = true;
+                publishProgress("", "Socket communcation stoped because: emergancy land activated");
+            } else if (drone_arrived == true){
+                stopSocket = true;
+                publishProgress("", "Socket communcation stoped because: drone arrived");
+            }
+        }
+        */
 
         try {
             socket.close();
@@ -55,7 +156,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
 
 
-     return printMessage;
+     return "socket comm stopped";
     }
 
     @Override
@@ -119,6 +220,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
             e.printStackTrace();
             System.out.println("readFromSocket() -- IOException: " + e.toString());
         }
+
         return Mess;
     }
 
