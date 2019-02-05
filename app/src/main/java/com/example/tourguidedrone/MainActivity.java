@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -71,13 +72,13 @@ public class MainActivity extends AppCompatActivity {
         //stop/start listeners + Async/thread deployment
 
 
-        //GPS, request for user's location (per Android 6.0), set up location manager + location listener
+//        //GPS, request for user's location (per Android 6.0), set up location manager + location listener
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-
+                updateLocation();
             }
 
             @Override
@@ -95,22 +96,16 @@ public class MainActivity extends AppCompatActivity {
                 debugTextView.setText("GPS is turned off. Unable to access location" + "\n");
             }
         };
-        //refresh location ever .5 sec, ignore distance crossed
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[] );
+//        //refresh location ever .5 sec, ignore distance crossed
+//
 
-
-
-            return;
-        }
-        locationManager.requestLocationUpdates("gps", 500, 0, locationListener);
 
     }
 
 
     ////////////////////////////try loop timer + access location
     //connected to start button for messing with timer and GPS, delete this later
-    public void testingStuff(View view){
+    public void testingStuff(View view) {
         debugTextView.setText("TIMER START:" + "\n");
         int counter = 0;
         //start timer part
@@ -118,8 +113,21 @@ public class MainActivity extends AppCompatActivity {
         SystemClock.sleep(1000);
 
 
+    }
 
 
+    private void updateLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates("gps", 500, 0, locationListener);
     }
 
 
