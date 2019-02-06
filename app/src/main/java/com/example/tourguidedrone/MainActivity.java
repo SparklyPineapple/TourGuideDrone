@@ -13,15 +13,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
     //class variables
     private String destinationString = "you should never see me in this form :) destination string";
     protected Spinner selectDestList;// = findViewById(R.id.selectDestList);
+    private asyncClient phoneClient;
 
     //socket communcation: phone to pi
     private double destLat = 0;
@@ -42,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
 
     //set up text editing for "debugtext
     TextView debugTextView;
+    Button startBtn;
+    Button stopBtn;
+    TextView gpsTextView;
 
     //For GPS
     LocationManager locationManager = null;
@@ -67,10 +75,27 @@ public class MainActivity extends AppCompatActivity {
         selectDestList.setAdapter(selectDestListAdapter);
 
         //set up txt/debug strings for use
-        debugTextView = (TextView) findViewById(R.id.debugTextView);
+        debugTextView = findViewById(R.id.debugTextView);
 
         //stop/start listeners + Async/thread deployment
+        startBtn = findViewById(R.id.startButton);
+        stopBtn = findViewById(R.id.stopButton);
+        gpsTextView = findViewById(R.id.textView4); //todo change id of this textview?
+        startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String destString = ""; //todo extract destination from list
+                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destString, debugTextView );
+                phoneClient.execute();
+                stopBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        phoneClient.cancel(true);
+                    }
+                });
 
+            }
+        });
 
 //        //GPS, request for user's location (per Android 6.0), set up location manager + location listener
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);

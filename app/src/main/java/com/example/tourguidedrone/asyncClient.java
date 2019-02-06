@@ -45,14 +45,21 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     //thread functions-----------------------------------------------------------------------------------
     //gui objects that async reads or writes from must be in constructor parameters
     //TODO pass in object that can update current phone GPS location, this could actually be checked
-    asyncClient(TextView gpsTextView, GpsStatus gpsStatus, String IP, int portN, String destString, TextView debugTextView ){
+    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, String destString, TextView debugTextView ){
+        this.gpsTextView = gpsTextView;
+        this.ipOfServer = ipOfServer;
+        this.portNum = portNum;
+        this.debugTextView = debugTextView;
+        //todo parse destString and use to initialize destLat and destLon <-- could also be done in constructor or main activity
 
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        //todo parse destString and use to initialize destLat and destLon <-- could also be done in constructor or main activity
+        //This should be the only time we call .setText on debugTextView in AsyncClient
+        String message = "Starting Thread";
+        debugTextView.setText(message);
     }
 
     @Override
@@ -162,18 +169,23 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     @Override
     protected void onProgressUpdate(String...progress){
         //this method may take several seconds to complete <--Android Studios
-        String gpsString = progress[0];
-        String receivedSocketMessage = progress[1];
+        //progress[0] == string for gps
+        //progress[1] == String that is received Socket message
+        gpsTextView.setText(progress[0]);
+        debugTextView.append(progress[1]);
+
     }
 
     @Override
     protected void onPostExecute(String printMessage){
         //not used for now, thread will be cancelled
+        debugTextView.append("onPostExecute():"+printMessage);
     }
 
     @Override
     protected void onCancelled(){
         //todo update debugTV
+        debugTextView.append("communication cancelled");
 
     }
 
