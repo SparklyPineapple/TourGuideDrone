@@ -19,15 +19,14 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private String ipOfServer = "";
     private int portNum = -1;
     private TextView debugTextView;
-   // private gps object ? //TODO see to-do near constructor
     private TextView gpsTextView;
     private String receivedMessage = "string receivedMessage";
     //socket communication: phone to pi
-    private int destWaypointNum = -1;
+    private int destWaypointNum; //waypoint index num of
     private double phoneLat = 0;
     private double phoneLong = 0;
-    private boolean phoneStartTriggered = false; //referred to as start in the spreadsheet
-    private boolean phoneStopTriggered = false; //referred to as stop in the spreadsheet. renamed for clarification
+    private boolean phoneStartTriggered = false;
+    private boolean phoneStopTriggered = false;
     private boolean emergencyLand = false;
     //socket communication: pi to phone
     private boolean ack = false;
@@ -36,15 +35,11 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private int droneAlt =0;
     private int droneVelocity = 0;
     private int droneHeading = 0;
-
-    //should get this from debugging from the drone????
-    private boolean drone_arrived = false; //kirby added since you want to stop when drone stops and drone GPS + phone GPS are different
+    private boolean drone_arrived = false;
 
 
     //thread functions-----------------------------------------------------------------------------------
-    //gui objects that async reads or writes from must be in constructor parameters
-    //TODO pass in object that can update current phone GPS location, this could actually be checked
-    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, int destNum, TextView debugTextView ){
+    asyncClient(TextView gpsTextView, String ipOfServer, int portNum, int destNum, TextView debugTextView ){
         this.gpsTextView = gpsTextView;
         this.ipOfServer = ipOfServer;
         this.portNum = portNum;
@@ -69,90 +64,55 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
         openSocketClient(ipOfServer,portNum);
 
-        //TODO set up timer loop, make sure to receive an acknowledge before sending next value
-        //TODO - what happens if no ack received? does it just wait. Do we need to send ack for sending????
-        //TODO - connect stop button to the boolean phoneStopTriggered
-        //TODO-getting GPS
+//        while (!stopSocket) {
+//            SystemClock.sleep(1000); //wait for 1 sec
 
-/*        while (!stopSocket) {
-            SystemClock.sleep(1000); //wait for 1 sec
-
-
-            //TODO get phones current GPS coordinates here and set values for class variables. output to debug txt
-            publishProgress("String for GPS", "");
-
-
-
-
-
-
-
-
-            //server sends ack after it reads something. wait for next ack before a new send
-            //send ack to pi the same way
-
-
-            //TODO check for ack before read. ASK AILIN HOW SHE HAS ACK SET UP + WHAT IT LOOKS LIKEs
-            //if ack then ....
-            //else wait for ack -------put this in read function? have a timer if ack not received after 5 sec then error
-            //do all acks in read?????
-
-            //ack
-            receivedMessage = readFromSocket();
-            ack = Boolean.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneLat
-            String receivedMessage = readFromSocket();
-            droneLat = Double.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneLong
-            receivedMessage = readFromSocket();
-            droneLong = Double.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneAlt
-            receivedMessage = readFromSocket();
-            droneAlt = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneVel
-            receivedMessage = readFromSocket();
-            droneVelocity = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneHeading
-            receivedMessage = readFromSocket();
-            droneHeading = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
+            //Receive data from pi
+//            receivedMessage = readFromSocket();
+//            ack = Boolean.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);
+//            //droneLat
+//            String receivedMessage = readFromSocket();
+//            droneLat = Double.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);
+//            //droneLong
+//            receivedMessage = readFromSocket();
+//            droneLong = Double.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);
+//            //droneAlt
+//            receivedMessage = readFromSocket();
+//            droneAlt = Integer.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);
+//            //droneVel
+//            receivedMessage = readFromSocket();
+//            droneVelocity = Integer.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);
+//            //droneHeading
+//            receivedMessage = readFromSocket();
+//            droneHeading = Integer.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);
 
 
-            //TODO - possibly stuff w/ ack here to??????. send an ack?????
-            sendSocketData(String.valueOf(destLat));
-            sendSocketData(String.valueOf(destLong));
-            sendSocketData(String.valueOf(phoneLat));
-            sendSocketData(String.valueOf(phoneLong));
-            sendSocketData(String.valueOf(phoneStartTriggered));
-            sendSocketData(String.valueOf(phoneStopTriggered));
-            sendSocketData(String.valueOf(emergencyLand));
+            //Send phone data to pi
+//            sendSocketData(String.valueOf(destLat));
+//            sendSocketData(String.valueOf(destLong));
+//            sendSocketData(String.valueOf(phoneLat));
+//            sendSocketData(String.valueOf(phoneLong));
+//            sendSocketData(String.valueOf(phoneStartTriggered));
+//            sendSocketData(String.valueOf(phoneStopTriggered));
+//            sendSocketData(String.valueOf(emergencyLand));
 
 
 
 
-            //publishProgress("String for GPS", "String for received socket Messages");
-            //if its a debug message then print to the debug txt in the UI
 
-            //TODO - check and see of the stop button has been pressed
+//            //if drone arrived then stop communication and exit
+//            if (drone_arrived == true){
+//                stopSocket = true;
+//                publishProgress("", "Socket communcation stoped because: drone arrived");
+//            }
+//        }
 
-            //if button stop, emerg, stop or drone arrived then stop comm
-            if (phoneStopTriggered == true){
-                stopSocket = true;
-                publishProgress("", "Socket communcation stoped because: stop button pressed");
-            }else if (emergencyLand == true){
-                stopSocket = true;
-                publishProgress("", "Socket communcation stoped because: emergancy land activated");
-            } else if (drone_arrived == true){
-                stopSocket = true;
-                publishProgress("", "Socket communcation stoped because: drone arrived");
-            }
-        }
-        */
 
         try {
             socket.close();
