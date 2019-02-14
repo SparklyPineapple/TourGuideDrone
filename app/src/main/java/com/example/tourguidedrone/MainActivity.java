@@ -84,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String destString = ""; //todo extract destination from list
-                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destString, debugTextView );
+                int destNum = -1; //todo extract destination from list
+                phoneClient = new asyncClient(gpsTextView, "10.13.78.162", 8080, destNum, debugTextView ); //ip of drone "192.168.4.1", port of drone 8000
                 phoneClient.execute();
                 stopBtn.setOnClickListener(new View.OnClickListener() {
                     @Override

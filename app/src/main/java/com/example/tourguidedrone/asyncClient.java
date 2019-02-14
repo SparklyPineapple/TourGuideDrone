@@ -2,6 +2,7 @@ package com.example.tourguidedrone;
 
 import android.location.GpsStatus;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.SystemClock;
 import android.widget.TextView;
 
@@ -21,17 +22,18 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private TextView debugTextView;
    // private gps object ? //TODO see to-do near constructor
     private TextView gpsTextView;
-    private String receivedMessage = "string receivedMessage";
+    //private String receivedMessage = "string receivedMessage";
     //socket communication: phone to pi
-    private double destLat = 0; //a table of mapping coord to dest is in phone if we do it this way. do we care? or do we want to do it all in the drone?
-    private double destLong = 0;
+    //private double destLat = 0; //a table of mapping coord to dest is in phone if we do it this way. do we care? or do we want to do it all in the drone?
+    //private double destLong = 0;
+    private int destWayPoint = -1;
     private double phoneLat = 0;
     private double phoneLong = 0;
     private boolean phoneStartTriggered = false; //referred to as start in the spreadsheet
     private boolean phoneStopTriggered = false; //referred to as stop in the spreadsheet. renamed for clarification
     private boolean emergencyLand = false;
+    private boolean ackFromPhone = false;
     //socket communication: pi to phone
-    private boolean ack = false;
     private double droneLat = 0;
     private double droneLong = 0;
     private int droneAlt =0;
@@ -41,15 +43,22 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     //should get this from debugging from the drone????
     private boolean drone_arrived = false; //kirby added since you want to stop when drone stops and drone GPS + phone GPS are different
 
+    //timer for timeout error if ack is not received
+    private CountDownTimer ackTimer = null;
+    private boolean ackTimerDone = false;
+
+
+
 
     //thread functions-----------------------------------------------------------------------------------
     //gui objects that async reads or writes from must be in constructor parameters
     //TODO pass in object that can update current phone GPS location, this could actually be checked
-    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, String destString, TextView debugTextView ){
+    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, int destNum, TextView debugTextView ){
         this.gpsTextView = gpsTextView;
         this.ipOfServer = ipOfServer;
         this.portNum = portNum;
         this.debugTextView = debugTextView;
+        this.destWayPoint = destNum;
         //todo parse destString and use to initialize destLat and destLon <-- could also be done in constructor or main activity
 
     }
@@ -58,8 +67,8 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     protected void onPreExecute() {
         super.onPreExecute();
         //This should be the only time we call .setText on debugTextView in AsyncClient
-        String message = "Starting Thread";
-        debugTextView.setText(message);
+        String message = "\n" + "Starting Thread";
+        debugTextView.append(message);
     }
 
     @Override
@@ -69,6 +78,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         emergencyLand = false;
         phoneStopTriggered = false;
 
+        String message = "insert message here";
         openSocketClient(ipOfServer,portNum);
 
         //TODO set up timer loop, make sure to receive an acknowledge before sending next value
@@ -76,85 +86,65 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         //TODO - connect stop button to the boolean phoneStopTriggered
         //TODO-getting GPS
 
-/*        while (!stopSocket) {
+//       while (!stopSocket) {
             SystemClock.sleep(1000); //wait for 1 sec
 
-
-            //TODO get phones current GPS coordinates here and set values for class variables. output to debug txt
-            publishProgress("String for GPS", "");
-
-
+            //sendSocketData("this is the app speaking");
+            sendSocketDataAndReceiveAck(String.valueOf(true));//--WORKS WITH EXCEPTION OF TIMER STUFF
+            //message = readFromSocketAndSendAck(); //
 
 
+            //TODO get phones current GPS coordinates here
+            //publishProgress("String for GPS", "");
 
 
-
-
-            //server sends ack after it reads something. wait for next ack before a new send
-            //send ack to pi the same way
-
-
-            //TODO check for ack before read. ASK AILIN HOW SHE HAS ACK SET UP + WHAT IT LOOKS LIKEs
-            //if ack then ....
-            //else wait for ack -------put this in read function? have a timer if ack not received after 5 sec then error
-            //do all acks in read?????
-
-            //ack
-            receivedMessage = readFromSocket();
-            ack = Boolean.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
+            //RECEIVE ALL DATA FROM DRONE
             //droneLat
-            String receivedMessage = readFromSocket();
-            droneLat = Double.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneLong
-            receivedMessage = readFromSocket();
-            droneLong = Double.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneAlt
-            receivedMessage = readFromSocket();
-            droneAlt = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneVel
-            receivedMessage = readFromSocket();
-            droneVelocity = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-            //droneHeading
-            receivedMessage = readFromSocket();
-            droneHeading = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage);
-
-
-            //TODO - possibly stuff w/ ack here to??????. send an ack?????
-            sendSocketData(String.valueOf(destLat));
-            sendSocketData(String.valueOf(destLong));
-            sendSocketData(String.valueOf(phoneLat));
-            sendSocketData(String.valueOf(phoneLong));
-            sendSocketData(String.valueOf(phoneStartTriggered));
-            sendSocketData(String.valueOf(phoneStopTriggered));
-            sendSocketData(String.valueOf(emergencyLand));
+            //String receivedMessage = readFromSocketAndSendAck();
+            //droneLat = Double.valueOf(receivedMessage);
+            //publishProgress("", receivedMessage); //for debugging
+//            //droneLong
+//            receivedMessage = readFromSocketAndSendAck();
+//            droneLong = Double.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);//for debugging
+//            //droneAlt
+//            receivedMessage = readFromSocketAndSendAck();
+//            droneAlt = Integer.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);//for debugging
+//            //droneVel
+//            receivedMessage = readFromSocketAndSendAck();
+//            droneVelocity = Integer.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);//for debugging
+//            //droneHeading
+//            receivedMessage = readFromSocketAndSendAck();
+//            droneHeading = Integer.valueOf(receivedMessage);
+//            publishProgress("", receivedMessage);//for debugging
 
 
 
+            //fake data for testing
+            destWayPoint = 1; //
+            phoneLat = 2;
+            phoneLong = 3;
+            phoneStartTriggered = true;
+            phoneStopTriggered = false;
+            emergencyLand = false;
+            //SEND SOCKET ALL COMM DATA
+//            sendSocketDataAndReceiveAck(String.valueOf(destWayPoint));
+//            sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+//            sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+//            sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
+//            sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
+//            sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
 
-            //publishProgress("String for GPS", "String for received socket Messages");
-            //if its a debug message then print to the debug txt in the UI
 
-            //TODO - check and see of the stop button has been pressed
 
-            //if button stop, emerg, stop or drone arrived then stop comm
-            if (phoneStopTriggered == true){
-                stopSocket = true;
-                publishProgress("", "Socket communcation stoped because: stop button pressed");
-            }else if (emergencyLand == true){
-                stopSocket = true;
-                publishProgress("", "Socket communcation stoped because: emergancy land activated");
-            } else if (drone_arrived == true){
-                stopSocket = true;
-                publishProgress("", "Socket communcation stoped because: drone arrived");
+            //Check and see if drone arrived at dest. if so stop comm
+            if (drone_arrived == true){
+                //stopSocket =  //for while loop to say when stop
+                publishProgress("", "Socket communcation stopped because: drone arrived");
             }
-        }
-        */
+//        }
 
         try {
             socket.close();
@@ -163,7 +153,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
 
 
-     return "socket comm stopped";
+     return "\n"+"socket comm stopped";
     }
 
     @Override
@@ -218,24 +208,83 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
     }
 
+    private void sendSocketDataAndReceiveAck(String clientMessage){
+        //send pi message
+        sendSocketData(clientMessage);
+        //wait for pi to send back ack
+        String message = "";
+        ackTimerDone = false;
+        //startTimer();
+        while(true){
+            message = readFromSocket();
+            System.out.println("in while");
+
+            if (message.equals(String.valueOf(true))){
+                System.out.println("message = true");
+                //sendSocketData("got ack");
+                System.out.println("message sent and ack received");
+                //cancelTimer();
+                return;
+            } else if (ackTimerDone == true){
+                System.out.println("message != true");
+                //sendSocketData("did not get ack");
+                System.out.println("ERROR ACK TIMEOUT: NO ACK RECEIVED AFTER DATA SENT");
+                publishProgress("", "ERROR ACK TIMEOUT: NO ACK RECEIVED AFTER DATA SENT");
+                //TODO - get a string or boolean or something returned to the UI so we know what didnt sent an ack. Also possibly stop functionality of app or trigger emergany land or something
+                return;
+            }
+        }
+    }
+
+
+
 
     private String readFromSocket()  {
         System.out.println("readFromSocket()");
-        String Mess = "";
+        String yolo = "";
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            Mess = reader.readLine();
-            if (Mess != null) {
-                System.out.println(Mess + "<------ read from socket");
+            yolo = reader.readLine(); //DIES HERE :/
+            System.out.println(yolo);
+            if (yolo != null) {
+                System.out.println(yolo + "<------ read from socket");
             }
         }catch (IOException e){
             e.printStackTrace();
             System.out.println("readFromSocket() -- IOException: " + e.toString());
         }
 
-        return Mess;
+        return yolo;
     }
 
+    private String readFromSocketAndSendAck(){
+        //get message from pi
+        System.out.println("readFromSocketAndSendAck()");
+        String message = readFromSocket();
+        //send ack to pi that phone has received message
+        sendSocketData(String.valueOf(true));
+
+        return message;
+    }
+
+    //start 5 second timer
+    private void startTimer() {
+        ackTimer = new CountDownTimer(5000, 1000) {
+            public void onTick(long millisUntilFinished) {
+            }
+            public void onFinish() {
+                ackTimerDone = true;
+            }
+        };
+        ackTimer.start();
+    }
+
+
+    //cancel timer
+    private void cancelTimer() {
+        if(ackTimer!=null)
+            ackTimer.cancel();
+    }
 
 
 }
