@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     TextView debugTextView;
     Button startBtn;
     Button stopBtn;
+    Button emergencyBtn;
+    ToggleButton isEmergencyLandingTogBtn;
     TextView gpsTextView;
 
     //For GPS
@@ -81,18 +84,30 @@ public class MainActivity extends AppCompatActivity {
         startBtn = findViewById(R.id.startButton);
         stopBtn = findViewById(R.id.stopButton);
         gpsTextView = findViewById(R.id.textView4); //todo change id of this textview?
+        emergencyBtn = findViewById(R.id.emergancyLandButton);
+        isEmergencyLandingTogBtn = findViewById(R.id.isEmergencyLandingTogBtn);
+
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String destString = ""; //todo extract destination from list
-                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destString, debugTextView );
+                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destString, debugTextView,isEmergencyLandingTogBtn );
                 phoneClient.execute();
                 stopBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        isEmergencyLandingTogBtn.setChecked(false);
                         phoneClient.cancel(true);
                     }
                 });
+                emergencyBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        isEmergencyLandingTogBtn.setChecked(true);
+                        phoneClient.cancel(true);
+                    }
+                });
+
 
             }
         });

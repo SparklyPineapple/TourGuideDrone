@@ -4,6 +4,7 @@ import android.location.GpsStatus;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class asyncClient extends AsyncTask<Void, String, String> {
+public class  asyncClient extends AsyncTask<Void, String, String> {
 
     //Class Variables--------------------------------------------------------------------------------
     private Socket socket = null;
@@ -22,6 +23,8 @@ public class asyncClient extends AsyncTask<Void, String, String> {
    // private gps object ? //TODO see to-do near constructor
     private TextView gpsTextView;
     private String receivedMessage = "string receivedMessage";
+    ToggleButton isEmergencyLandingTogBtn;
+
     //socket communication: phone to pi
     private double destLat = 0; //a table of mapping coord to dest is in phone if we do it this way. do we care? or do we want to do it all in the drone?
     private double destLong = 0;
@@ -45,13 +48,13 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     //thread functions-----------------------------------------------------------------------------------
     //gui objects that async reads or writes from must be in constructor parameters
     //TODO pass in object that can update current phone GPS location, this could actually be checked
-    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, String destString, TextView debugTextView ){
+    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, String destString, TextView debugTextView, ToggleButton isEmergencyLandingTogBtn){
         this.gpsTextView = gpsTextView;
         this.ipOfServer = ipOfServer;
         this.portNum = portNum;
         this.debugTextView = debugTextView;
         //todo parse destString and use to initialize destLat and destLon <-- could also be done in constructor or main activity
-
+        this.isEmergencyLandingTogBtn = isEmergencyLandingTogBtn;
     }
 
     @Override
@@ -163,7 +166,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
 
 
-     return "socket comm stopped";
+     return "socket comm stopped \n";
     }
 
     @Override
@@ -179,13 +182,21 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     @Override
     protected void onPostExecute(String printMessage){
         //not used for now, thread will be cancelled
+
         debugTextView.append("onPostExecute():"+printMessage);
     }
 
     @Override
     protected void onCancelled(){
-        //todo update debugTV
-        debugTextView.append("communication cancelled");
+        String debugMessage="";
+
+        if(isEmergencyLandingTogBtn.isChecked()){
+            debugMessage = "thread cancelled by Emergency Landing \n";
+        }else{
+            debugMessage = "thread cancelled by STOP \n";
+        }
+
+        debugTextView.append(debugMessage);
 
     }
 
