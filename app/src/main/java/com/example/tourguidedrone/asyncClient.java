@@ -20,7 +20,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private int portNum = -1;
     private TextView debugTextView;
     private TextView gpsTextView;
-    private String receivedMessage = "string receivedMessage";
+    private String receivedMessage = "string_receivedMessage";
     //socket communication: phone to pi
     private int destWaypointNum; //waypoint index num of
     private double phoneLat = 0;
@@ -36,6 +36,8 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private int droneVelocity = 0;
     private int droneHeading = 0;
     private boolean drone_arrived = false;
+    //timer variables
+    boolean ackTimerDone = false;
 
 
     //thread functions-----------------------------------------------------------------------------------
@@ -52,7 +54,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         super.onPreExecute();
         //This should be the only time we call .setText on debugTextView in AsyncClient
         String message = "Starting Thread";
-        debugTextView.setText(message);
+        debugTextView.setText("Debug Data \n" + message);
     }
 
     @Override
@@ -64,43 +66,56 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
         openSocketClient(ipOfServer,portNum);
 
+        //receivedMessage = readFromSocket(); //works
+        //receivedMessage = readFromSocketAndSendAck(); //works
+        //sendSocketData("from app"); //works
+        //sendSocketDataAndReceiveAck("from app :)"); //works
+
+
+
+
+
 //        while (!stopSocket) {
 //            SystemClock.sleep(1000); //wait for 1 sec
 
-            //Receive data from pi
-//            receivedMessage = readFromSocket();
-//            ack = Boolean.valueOf(receivedMessage);
-//            publishProgress("", receivedMessage);
-//            //droneLat
-//            String receivedMessage = readFromSocket();
-//            droneLat = Double.valueOf(receivedMessage);
-//            publishProgress("", receivedMessage);
-//            //droneLong
-//            receivedMessage = readFromSocket();
-//            droneLong = Double.valueOf(receivedMessage);
-//            publishProgress("", receivedMessage);
-//            //droneAlt
-//            receivedMessage = readFromSocket();
-//            droneAlt = Integer.valueOf(receivedMessage);
-//            publishProgress("", receivedMessage);
-//            //droneVel
-//            receivedMessage = readFromSocket();
-//            droneVelocity = Integer.valueOf(receivedMessage);
-//            publishProgress("", receivedMessage);
-//            //droneHeading
-//            receivedMessage = readFromSocket();
-//            droneHeading = Integer.valueOf(receivedMessage);
-//            publishProgress("", receivedMessage);
+            //RECEIVE ALL DATA FROM DRONE
+            //droneLat
+            String receivedMessage = readFromSocketAndSendAck();
+            droneLat = Double.valueOf(receivedMessage);
+            publishProgress("", receivedMessage + "\n"); //for debugging
+            //droneLong
+            receivedMessage = readFromSocketAndSendAck();
+            droneLong = Double.valueOf(receivedMessage);
+            publishProgress("", receivedMessage + "\n");//for debugging
+            //droneAlt
+            receivedMessage = readFromSocketAndSendAck();
+            droneAlt = Integer.valueOf(receivedMessage);
+            publishProgress("", receivedMessage + "\n");//for debugging
+            //droneVel
+            receivedMessage = readFromSocketAndSendAck();
+            droneVelocity = Integer.valueOf(receivedMessage);
+            publishProgress("", receivedMessage + "\n");//for debugging
+            //droneHeading
+            receivedMessage = readFromSocketAndSendAck();
+            droneHeading = Integer.valueOf(receivedMessage);
+            publishProgress("", receivedMessage + "\n");//for debugging
 
 
-            //Send phone data to pi
-//            sendSocketData(String.valueOf(destLat));
-//            sendSocketData(String.valueOf(destLong));
-//            sendSocketData(String.valueOf(phoneLat));
-//            sendSocketData(String.valueOf(phoneLong));
-//            sendSocketData(String.valueOf(phoneStartTriggered));
-//            sendSocketData(String.valueOf(phoneStopTriggered));
-//            sendSocketData(String.valueOf(emergencyLand));
+            //fake data for testing
+//            destWaypointNum = 1;
+//            phoneLat = 2;
+//            phoneLong = 3;
+//            phoneStartTriggered = true;
+//            phoneStopTriggered = false;
+//            emergencyLand = false;
+
+            //SEND SOCKET ALL COMM DATA
+            sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+            sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+            sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+            sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
+            sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
+            sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
 
 
 
@@ -121,7 +136,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
 
 
-     return "socket comm stopped";
+     return "\n socket comm stopped";
     }
 
     @Override
@@ -143,7 +158,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     @Override
     protected void onCancelled(){
         //todo update debugTV
-        debugTextView.append("communication cancelled");
+        debugTextView.append("\n communication cancelled");
 
     }
 
@@ -176,6 +191,34 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
     }
 
+    private void sendSocketDataAndReceiveAck(String clientMessage){
+        //send pi message
+        sendSocketData(clientMessage);
+        //wait for pi to send back ack
+        String message = "";
+        ackTimerDone = false;
+        //startTimer();
+        while(true){
+            message = readFromSocket();
+            System.out.println("in while");
+
+            if (message.equals(String.valueOf(true))){
+                System.out.println("message = true");
+                //sendSocketData("got ack");
+                System.out.println("message sent and ack received");
+                //cancelTimer();
+                return;
+            } else if (ackTimerDone == true){
+                System.out.println("message != true");
+                //sendSocketData("did not get ack");
+                System.out.println("ERROR ACK TIMEOUT: NO ACK RECEIVED AFTER DATA SENT");
+                publishProgress("", "ERROR ACK TIMEOUT: NO ACK RECEIVED AFTER DATA SENT");
+                //TODO - get a string or boolean or something returned to the UI so we know what didnt sent an ack. Also possibly stop functionality of app or trigger emergany land or something
+                return;
+            }
+        }
+    }
+
 
     private String readFromSocket()  {
         System.out.println("readFromSocket()");
@@ -192,6 +235,16 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         }
 
         return Mess;
+    }
+
+    private String readFromSocketAndSendAck(){
+        //get message from pi
+        System.out.println("readFromSocketAndSendAck()");
+        String message = readFromSocket();
+        //send ack to pi that phone has received message
+        sendSocketData(String.valueOf(true));
+
+        return message;
     }
 
 

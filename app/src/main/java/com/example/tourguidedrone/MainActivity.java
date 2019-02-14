@@ -79,9 +79,14 @@ public class MainActivity extends AppCompatActivity {
                     destNum = 29;
                     //debugTextView.append("\n HSC");
                 }
-
-                //phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destNum, debugTextView );
-                //phoneClient.execute();
+                //pi wifi details:
+                    //IP: "192.168.4.1"
+                    //PORT: 8000
+                //kirby's wifi details
+                    //IP = "10.13.78.162"
+                    //PORT: 8080
+                phoneClient = new asyncClient(gpsTextView, "10.13.78.162", 8080, destNum, debugTextView );
+                phoneClient.execute();
                 stopBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
