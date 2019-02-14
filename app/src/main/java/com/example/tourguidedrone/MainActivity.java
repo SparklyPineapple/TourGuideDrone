@@ -24,7 +24,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity {
 
     //class variables
-    private String destinationString = "you should never see me in this form :) destination string";
+    private int destNum = -1;
     protected Spinner selectDestList;
     private asyncClient phoneClient;
 
@@ -40,20 +40,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //set up the choices for the dropdown destination list
-        selectDestList = findViewById(R.id.selectDestList);
-        String[] destListString = new String[]{"Stevens Student Center", "Dixon Ministry Center",
-                "Center for Biblical and Theological Studies", "Engineering and Science Center",
-                "Health and Science Center"};
-        ArrayAdapter<String> selectDestListAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_dropdown_item, destListString);
-        selectDestList.setAdapter(selectDestListAdapter);
 
-        //For Future Use.....
-        //SPINNER/DROPDOWN MENU: to get selected value from destinationDropDownList
-        //use "String text = mySpinner.getSelectedItem().toString();"
-
-
+        //populate and set up destination drop down menu
+        selectDestList = (Spinner) findViewById(R.id.selectDestList);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.destListArray, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        selectDestList.setAdapter(adapter);
 
         //set up txt/debug strings for use
         debugTextView = findViewById(R.id.debugTextView);
@@ -61,13 +57,31 @@ public class MainActivity extends AppCompatActivity {
         //stop/start listeners + Async/thread deployment
         startBtn = findViewById(R.id.startButton);
         stopBtn = findViewById(R.id.stopButton);
-        gpsTextView = findViewById(R.id.textView4); //todo change id of this textview?
+        gpsTextView = findViewById(R.id.gpsTextViewStatus);
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String destString = ""; //todo extract destination from list
-                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destString, debugTextView );
-                phoneClient.execute();
+                //get string from spinner to be sent to socket client
+                String destName = selectDestList.getSelectedItem().toString();
+                if (destName.equals("(SSC) Stevens Student Center")){
+                    destNum = 1;
+                    //debugTextView.append("\n SSC");
+                }else if (destName.equals("(DMC) Dixon Ministry Center")){
+                    destNum = 10;
+                    //debugTextView.append("\n DMC");
+                }else if (destName.equals("(BTS) Center for Biblical and Theological Studies")){
+                    destNum = 12;
+                    //debugTextView.append("\n BTS");
+                }else if (destName.equals("(ENS) Engineering and Science Center")){
+                    destNum = 23;
+                    //debugTextView.append("\n ENS");
+                }else if (destName.equals("(HSC) Health and Science Center")){
+                    destNum = 29;
+                    //debugTextView.append("\n HSC");
+                }
+
+                //phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8080, destNum, debugTextView );
+                //phoneClient.execute();
                 stopBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

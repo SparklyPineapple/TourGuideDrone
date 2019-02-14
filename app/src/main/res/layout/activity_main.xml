@@ -72,7 +72,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/gpsTextViewStatus"
         android:layout_width="wrap_content"
         android:layout_height="19dp"
         android:layout_marginTop="20dp"
@@ -87,7 +87,7 @@
         android:layout_marginTop="5dp"
         android:text="Socket Status"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+        app:layout_constraintTop_toBottomOf="@+id/gpsTextViewStatus" />
 
     <TextView
         android:id="@+id/debugTextView"

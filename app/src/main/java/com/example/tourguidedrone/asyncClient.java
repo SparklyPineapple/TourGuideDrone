@@ -23,8 +23,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private TextView gpsTextView;
     private String receivedMessage = "string receivedMessage";
     //socket communication: phone to pi
-    private double destLat = 0; //a table of mapping coord to dest is in phone if we do it this way. do we care? or do we want to do it all in the drone?
-    private double destLong = 0;
+    private int destWaypointNum = -1;
     private double phoneLat = 0;
     private double phoneLong = 0;
     private boolean phoneStartTriggered = false; //referred to as start in the spreadsheet
@@ -45,13 +44,12 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     //thread functions-----------------------------------------------------------------------------------
     //gui objects that async reads or writes from must be in constructor parameters
     //TODO pass in object that can update current phone GPS location, this could actually be checked
-    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, String destString, TextView debugTextView ){
+    asyncClient(TextView gpsTextView, /*GpsStatus gpsStatus,*/ String ipOfServer, int portNum, int destNum, TextView debugTextView ){
         this.gpsTextView = gpsTextView;
         this.ipOfServer = ipOfServer;
         this.portNum = portNum;
         this.debugTextView = debugTextView;
-        //todo parse destString and use to initialize destLat and destLon <-- could also be done in constructor or main activity
-
+        this.destWaypointNum = destNum;
     }
 
     @Override
