@@ -59,76 +59,137 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
     @Override
     protected String doInBackground(Void...arg0){
-        boolean stopSocket = false;
+        boolean loop = false;
         drone_arrived = false;
         emergencyLand = false;
         phoneStopTriggered = false;
 
+        //Connection! -State 1: everyone connects through the socket
         openSocketClient(ipOfServer,portNum);
 
-        //receivedMessage = readFromSocket(); //works
-        //receivedMessage = readFromSocketAndSendAck(); //works
-        //sendSocketData("from app"); //works
-        //sendSocketDataAndReceiveAck("from app :)"); //works
+        //Update! -State 2: pi + app update each other with all initial values
+        //droneLat
+        String receivedMessage = readFromSocketAndSendAck();
+        droneLat = Double.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n"); //for debugging
+        //droneLong
+        receivedMessage = readFromSocketAndSendAck();
+        droneLong = Double.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+        //droneAlt
+        receivedMessage = readFromSocketAndSendAck();
+        droneAlt = Integer.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+        //droneVel
+        receivedMessage = readFromSocketAndSendAck();
+        droneVelocity = Integer.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+        //droneHeading
+        receivedMessage = readFromSocketAndSendAck();
+        droneHeading = Integer.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
 
 
+        //SEND SOCKET ALL COMM DATA
+        sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
+        sendSocketDataAndReceiveAck(String.valueOf(false)); //emergency stop
+        sendSocketDataAndReceiveAck(String.valueOf(false)); //exit button
+
+        //Wait for start! -State 3: act according to stop/start button presses
+
+        //START BUTTON NEEDS TO BE PRESSED TO START THIS THREAD. FOR NOW ASSUME START IS ALREADY TRUE HERE
+        //Needs to work like ^ for final app. can auto start for async
+        //Drone waiting for start command! -State3: waiting for start to be pressed
+
+        boolean start = true; //will be value connected to UI start button in service client
+        boolean stop = false; //will be value connected to UI (aborts current mission values and waits for new mission. DO NOT stop socket
+
+        //only do one loop since we have no functionality for stop, as stop is defined for the new stop button
+        //while (loop) {
+
+            //send start boolean
+            sendSocketDataAndReceiveAck(String.valueOf(start));
+            //FUTURE: send exit button boolean - NOT IMPLEMENTED YET SO DONT. current stop button is more like the exit button should be
+            //send false bc exit will be false rm
+            sendSocketDataAndReceiveAck(String.valueOf(false));
+
+            //FUTURE: if exit=true then exit the loop and stop socket
+            if (start) {
+                //send destWaypointNumber and phone lat and long
+                sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+                sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+                sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+
+                //Take off! -State 4:
+                //check if mission aborted (stop button)
+                sendSocketDataAndReceiveAck(String.valueOf(stop));
+                //if stop == false break from loop and send ^
+
+                //else go through with take off
+                receivedMessage = "";
+                boolean takingOff = true;
+                while (takingOff){
+                    //check for string "adv" then end loop, otherwise get drone altitude
+                    receivedMessage = readFromSocketAndSendAck();
+                    if (receivedMessage.equals("adv")){
+                        takingOff = false;
+                    } else {
+                        droneAlt = Integer.valueOf(receivedMessage);
+                    }
+                }
+
+                //while in flight + landing
+                String message = "";
+                boolean inFlight = true;
+                receivedMessage = "";
+                while (inFlight) {
+                    receivedMessage = readFromSocketAndSendAck();
+                    //if first message = done then flight is done. skip rest
+                    if (receivedMessage.equals("done")) {
+                        inFlight = false;
+                    } else {
+                        //populate and send nessarcy data
+                        //droneLat
+                        droneLat = Double.valueOf(receivedMessage);
+                        publishProgress("", receivedMessage + "\n"); //for debugging
+                        //droneLong
+                        receivedMessage = readFromSocketAndSendAck();
+                        droneLong = Double.valueOf(receivedMessage);
+                        publishProgress("", receivedMessage + "\n");//for debugging
+                        //droneAlt
+                        receivedMessage = readFromSocketAndSendAck();
+                        droneAlt = Integer.valueOf(receivedMessage);
+                        publishProgress("", receivedMessage + "\n");//for debugging
+                        //droneVel
+                        receivedMessage = readFromSocketAndSendAck();
+                        droneVelocity = Integer.valueOf(receivedMessage);
+                        publishProgress("", receivedMessage + "\n");//for debugging
+                        //droneHeading
+                        receivedMessage = readFromSocketAndSendAck();
+                        droneHeading = Integer.valueOf(receivedMessage);
+                        publishProgress("", receivedMessage + "\n");//for debugging
 
 
-
-//        while (!stopSocket) {
-//            SystemClock.sleep(1000); //wait for 1 sec
-
-            //RECEIVE ALL DATA FROM DRONE
-            //droneLat
-            String receivedMessage = readFromSocketAndSendAck();
-            droneLat = Double.valueOf(receivedMessage);
-            publishProgress("", receivedMessage + "\n"); //for debugging
-            //droneLong
-            receivedMessage = readFromSocketAndSendAck();
-            droneLong = Double.valueOf(receivedMessage);
-            publishProgress("", receivedMessage + "\n");//for debugging
-            //droneAlt
-            receivedMessage = readFromSocketAndSendAck();
-            droneAlt = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage + "\n");//for debugging
-            //droneVel
-            receivedMessage = readFromSocketAndSendAck();
-            droneVelocity = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage + "\n");//for debugging
-            //droneHeading
-            receivedMessage = readFromSocketAndSendAck();
-            droneHeading = Integer.valueOf(receivedMessage);
-            publishProgress("", receivedMessage + "\n");//for debugging
+                        //SEND SOCKET ALL COMM DATA
+                        sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+                        sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+                        sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+                        sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
+                        sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
+                        //sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
+                        //send future exit button info here
+                    }
+                }
 
 
-            //fake data for testing
-//            destWaypointNum = 1;
-//            phoneLat = 2;
-//            phoneLong = 3;
-//            phoneStartTriggered = true;
-//            phoneStopTriggered = false;
-//            emergencyLand = false;
-
-            //SEND SOCKET ALL COMM DATA
-            sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
-            sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
-            sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
-            sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
-            sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
-            sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
+            }
 
 
-
-
-
-//            //if drone arrived then stop communication and exit
-//            if (drone_arrived == true){
-//                stopSocket = true;
-//                publishProgress("", "Socket communcation stoped because: drone arrived");
-//            }
-//        }
-
-
+        //}
         try {
             socket.close();
         } catch (IOException e) {
@@ -247,6 +308,40 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         return message;
     }
 
+    private void update_GPS_UI_Info() {
+
+        //RECEIVE ALL DATA FROM DRONE
+        //droneLat
+        String receivedMessage = readFromSocketAndSendAck();
+        droneLat = Double.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n"); //for debugging
+        //droneLong
+        receivedMessage = readFromSocketAndSendAck();
+        droneLong = Double.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+        //droneAlt
+        receivedMessage = readFromSocketAndSendAck();
+        droneAlt = Integer.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+        //droneVel
+        receivedMessage = readFromSocketAndSendAck();
+        droneVelocity = Integer.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+        //droneHeading
+        receivedMessage = readFromSocketAndSendAck();
+        droneHeading = Integer.valueOf(receivedMessage);
+        publishProgress("", receivedMessage + "\n");//for debugging
+
+
+        //SEND SOCKET ALL COMM DATA
+        sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
+        sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
+        //sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
+        //send future exit button info here
+    }
 
 
 }
