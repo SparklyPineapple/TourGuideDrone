@@ -25,7 +25,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private int destWaypointNum; //waypoint index num of
     private double phoneLat = 0;
     private double phoneLong = 0;
-    private boolean phoneStartTriggered = false;
+    private boolean phoneStartTriggered = true;
     private boolean phoneStopTriggered = false;
     private boolean emergencyLand = false;
     //socket communication: pi to phone
@@ -65,6 +65,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         phoneStopTriggered = false;
 
         //Connection! -State 1: everyone connects through the socket
+        publishProgress("", " ready to open client");
         openSocketClient(ipOfServer,portNum);
 
         //Update! -State 2: pi + app update each other with all initial values
@@ -97,7 +98,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
         sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
         sendSocketDataAndReceiveAck(String.valueOf(false)); //emergency stop
-        sendSocketDataAndReceiveAck(String.valueOf(false)); //exit button
+        sendSocketDataAndReceiveAck(String.valueOf(false)); //exit buttons
 
         //Wait for start! -State 3: act according to stop/start button presses
 
@@ -112,7 +113,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         //while (loop) {
 
             //send start boolean
-            sendSocketDataAndReceiveAck(String.valueOf(start));
+            sendSocketDataAndReceiveAck(String.valueOf(true));
             //FUTURE: send exit button boolean - NOT IMPLEMENTED YET SO DONT. current stop button is more like the exit button should be
             //send false bc exit will be false rm
             sendSocketDataAndReceiveAck(String.valueOf(false));
@@ -175,11 +176,11 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
 
                         //SEND SOCKET ALL COMM DATA
-                        sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
-                        sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
-                        sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
-                        sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
-                        sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
+//                        sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+//                        sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
+//                        sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
+//                        sendSocketDataAndReceiveAck(String.valueOf(phoneStartTriggered));
+//                        sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
                         //sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
                         //send future exit button info here
                     }

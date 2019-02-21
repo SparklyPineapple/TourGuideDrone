@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 //kirby's wifi details
                     //IP = "10.13.78.162"
                     //PORT: 8080
-                phoneClient = new asyncClient(gpsTextView, "10.13.78.162", 8080, destNum, debugTextView );
+                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8000, destNum, debugTextView );
                 phoneClient.execute();
                 stopBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
