@@ -2,6 +2,7 @@ package com.example.tourguidedrone;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -38,8 +39,9 @@ public class MainActivity extends AppCompatActivity {
         // Apply the adapter to the spinner
         selectDestList.setAdapter(adapter);
 
-        //set up txt/debug strings for use
+        //set up scrolling on debug tet
         debugTextView = findViewById(R.id.debugTextView);
+        debugTextView.setMovementMethod(new ScrollingMovementMethod());
 
         //stop/start listeners + Async/thread deployment
         startBtn = findViewById(R.id.startButton);
