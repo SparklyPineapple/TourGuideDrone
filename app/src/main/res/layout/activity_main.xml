@@ -24,7 +24,7 @@
 
     <Button
         android:id="@+id/startButton"
-        android:layout_width="70dp"
+        android:layout_width="80dp"
         android:layout_height="70dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
@@ -33,21 +33,24 @@
         android:onClick="countDownTimer"
         android:text="Start"
         android:textAllCaps="false"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@+id/connectButton"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/disconnectButton"
-        android:layout_width="70dp"
+        android:layout_width="80dp"
         android:layout_height="70dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="70dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:background="#BAE2FF"
         android:text="Disconnect"
         android:textAllCaps="false"
-        android:textSize="12sp"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/cancelButton"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -67,7 +70,7 @@
         android:layout_height="70dp"
         android:layout_marginStart="32dp"
         android:layout_marginLeft="32dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:layout_marginRight="32dp"
         android:background="#D91111"
@@ -95,12 +98,13 @@
         android:id="@+id/debugTextView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginLeft="12dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#51EDEDED"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -109,7 +113,7 @@
 
     <Button
         android:id="@+id/cancelButton"
-        android:layout_width="70dp"
+        android:layout_width="80dp"
         android:layout_height="70dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
@@ -117,21 +121,21 @@
         android:background="#FDFFBA"
         android:text="Cancel"
         android:textAllCaps="false"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@+id/startButton"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/connectButton"
-        android:layout_width="70dp"
+        android:layout_width="80dp"
         android:layout_height="70dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginLeft="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginTop="70dp"
         android:background="#EABCFE"
         android:text="Connect"
         android:textAllCaps="false"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
