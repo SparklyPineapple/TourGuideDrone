@@ -1,15 +1,21 @@
 package com.example.tourguidedrone;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     //class variables
     private int destNum = -1;
@@ -18,10 +24,16 @@ public class MainActivity extends AppCompatActivity {
 
     //set up text editing for "debugtext
     TextView debugTextView;
-    Button startBtn;
-    Button stopBtn;
+    Button startBtn, connectBtn, cancelBtn, disconBtn, emergLandBtn;
     TextView gpsTextView;
 
+    // variables for connecting so SocketService;
+    private SocketService socketService;
+    private Boolean isServiceBound = false;
+    private ServiceConnection socketServiceConnection;
+    private Intent socketServiceIntent;
+    private Boolean runDone;
+    private Boolean isFlightStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,19 +51,119 @@ public class MainActivity extends AppCompatActivity {
         // Apply the adapter to the spinner
         selectDestList.setAdapter(adapter);
 
-        //set up scrolling on debug tet
+        //set up scrolling on debug text
         debugTextView = findViewById(R.id.debugTextView);
         debugTextView.setMovementMethod(new ScrollingMovementMethod());
 
-        //stop/start listeners + Async/thread deployment
+        //set up and send all button listening to MainActivity.OnClick
+        connectBtn = findViewById(R.id.connectButton);
         startBtn = findViewById(R.id.startButton);
-        stopBtn = findViewById(R.id.disconnectButton);
+        cancelBtn = findViewById(R.id.cancelButton);
+        disconBtn = findViewById(R.id.disconnectButton);
+        emergLandBtn = findViewById(R.id.emergancyLandButton);
+
+        connectBtn.setOnClickListener(this);
+        startBtn.setOnClickListener(this);
+        cancelBtn.setOnClickListener(this);
+        disconBtn.setOnClickListener(this);
+        emergLandBtn.setOnClickListener(this);
+
         gpsTextView = findViewById(R.id.gpsTextViewStatus);
-        startBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //get string from spinner to be sent to socket client
-                String destName = selectDestList.getSelectedItem().toString();
+
+        //used for making a socketService connection later
+        socketServiceIntent = new Intent(this, SocketService.class);
+
+//        startBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //get string from spinner to be sent to socket client
+//                String destName = selectDestList.getSelectedItem().toString();
+//                if (destName.equals("(SSC) Stevens Student Center")){
+//                    destNum = 1;
+//                    //debugTextView.append("\n SSC");
+//                }else if (destName.equals("(DMC) Dixon Ministry Center")){
+//                    destNum = 10;
+//                    //debugTextView.append("\n DMC");
+//                }else if (destName.equals("(BTS) Center for Biblical and Theological Studies")){
+//                    destNum = 12;
+//                    //debugTextView.append("\n BTS");
+//                }else if (destName.equals("(ENS) Engineering and Science Center")){
+//                    destNum = 23;
+//                    //debugTextView.append("\n ENS");
+//                }else if (destName.equals("(HSC) Health and Science Center")){
+//                    destNum = 29;
+//                    //debugTextView.append("\n HSC");
+//                }
+//                //pi wifi details:
+//                    //IP: "192.168.4.1"
+//                    //PORT: 8000
+//                //kirby's wifi details
+//                    //IP = "10.13.78.162"
+//                    //PORT: 8080
+//                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8000, destNum, debugTextView );
+//                phoneClient.execute();
+////                stopBtn.setOnClickListener(new View.OnClickListener() {
+////                    @Override
+////                    public void onClick(View v) {
+////                        phoneClient.cancel(true);
+////                    }
+////                });
+//
+//            }
+//        });
+
+
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.connectButton:
+
+                if(!isServiceBound){
+                    startService(socketServiceIntent);
+                    bindService();
+                    socketService.setConnectIsPressed(true);
+                    debugTextView.setText("SocketService started and bound: you can now call SocketService Functions");
+                }else{
+                    debugTextView.setText("SocketService already Bound");
+                }
+                break;
+            case R.id.startButton:
+                setDestNumFromScroll();
+                if(isServiceBound){
+                    socketService.setStartIsPressed(true);
+                }
+                break;
+            case R.id.cancelButton:
+                if(isServiceBound){
+                    socketService.setCancelIsPressed(true);
+                }
+                break;
+            case R.id.disconnectButton:
+                if(isServiceBound){
+                    socketService.setDisconnectIsPressed(true);
+
+                    if(socketService.getThreadDestroyable()) {//todo: alternatively write in SocketService function LastMessage(){this.stopself()}
+                        unbindService();
+                    }
+                    debugTextView.setText("SocketService Destroyed");
+                }else{
+                    debugTextView.setText("SocketService already Destroyed or never stated");
+                }
+                break;
+            case R.id.emergancyLandButton:
+                break;
+        }
+
+
+    }
+
+    //TODO once a second update things function
+
+
+    private void setDestNumFromScroll(){
+        String destName = selectDestList.getSelectedItem().toString();
                 if (destName.equals("(SSC) Stevens Student Center")){
                     destNum = 1;
                     //debugTextView.append("\n SSC");
@@ -68,26 +180,37 @@ public class MainActivity extends AppCompatActivity {
                     destNum = 29;
                     //debugTextView.append("\n HSC");
                 }
-                //pi wifi details:
-                    //IP: "192.168.4.1"
-                    //PORT: 8000
-                //kirby's wifi details
-                    //IP = "10.13.78.162"
-                    //PORT: 8080
-                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8000, destNum, debugTextView );
-                phoneClient.execute();
-                stopBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        phoneClient.cancel(true);
-                    }
-                });
-
-            }
-        });
-
-
     }
 
+
+
+    private void bindService(){
+        Log.i("MA_inf", "BindService()");
+        if(socketServiceConnection == null){
+            socketServiceConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder serviceBinder) {
+                    SocketService.myBinder myBinder = (SocketService.myBinder)serviceBinder;
+                    socketService = ((SocketService.myBinder) serviceBinder).getService();
+                    isServiceBound = true;
+                    Log.i("MA_inf", "bindservice.onServiceConnected");
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    Log.i("MA_inf", "bindservice.onServiceDisconnected");
+                    isServiceBound = false;
+                }
+            };
+        }
+        bindService(socketServiceIntent, socketServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void unbindService(){
+        if(isServiceBound){
+            unbindService(socketServiceConnection);
+            isServiceBound=false;
+        }
+    }
 
 }
