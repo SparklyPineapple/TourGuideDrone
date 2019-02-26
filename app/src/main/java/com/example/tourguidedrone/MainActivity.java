@@ -75,38 +75,38 @@ public class MainActivity extends AppCompatActivity {
                 //get string from spinner to be sent to socket client
                 String destName = selectDestList.getSelectedItem().toString();
                 if (destName.equals("(SSC) Stevens Student Center")){
-                    destNum = 1;
+                    destNum = 0;
                     //debugTextView.append("\n SSC");
                 }else if (destName.equals("(DMC) Dixon Ministry Center")){
-                    destNum = 10;
+                    destNum = 9;
                     //debugTextView.append("\n DMC");
                 }else if (destName.equals("(BTS) Center for Biblical and Theological Studies")){
-                    destNum = 12;
+                    destNum = 11;
                     //debugTextView.append("\n BTS");
                 }else if (destName.equals("(ENS) Engineering and Science Center")){
-                    destNum = 23;
+                    destNum = 22;
                     //debugTextView.append("\n ENS");
                 }else if (destName.equals("(HSC) Health and Science Center")){
-                    destNum = 29;
+                    destNum = 28;
                     //debugTextView.append("\n HSC");
                 }
 
                 //now to start place spinner selection
                 String startName = spinner_startPlace.getSelectedItem().toString();
                 if (startName.equals("(SSC) Stevens Student Center")){
-                    startNum = 1;
+                    startNum = 0;
                     //debugTextView.append("\n SSC");
                 }else if (startName.equals("(DMC) Dixon Ministry Center")){
-                    startNum = 10;
+                    startNum = 9;
                     //debugTextView.append("\n DMC");
                 }else if (startName.equals("(BTS) Center for Biblical and Theological Studies")){
-                    startNum = 12;
+                    startNum = 11;
                     //debugTextView.append("\n BTS");
                 }else if (startName.equals("(ENS) Engineering and Science Center")){
-                    startNum = 23;
+                    startNum = 22;
                     //debugTextView.append("\n ENS");
                 }else if (startName.equals("(HSC) Health and Science Center")){
-                    startNum = 29;
+                    startNum = 28;
                     //debugTextView.append("\n HSC");
                 }
 
@@ -114,9 +114,12 @@ public class MainActivity extends AppCompatActivity {
                     //IP: "192.168.4.1"
                     //PORT: 8000
                 //kirby's wifi details
-                    //IP = "10.13.78.162"
+                    //IP: "10.13.78.162"
                     //PORT: 8080
-                phoneClient = new asyncClient(gpsTextView, "192.168.4.1", 8000, startNum, destNum, debugTextView );
+                //matts wifi details
+                    //IP: "10.13.115.22"
+                    //PORT: 8000
+                phoneClient = new asyncClient(gpsTextView, "10.13.115.22", 8000, startNum, destNum, debugTextView );
                 phoneClient.execute();
                 stopBtn.setOnClickListener(new View.OnClickListener() {
                     @Override

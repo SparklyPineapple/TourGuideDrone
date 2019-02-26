@@ -33,8 +33,8 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private boolean ack = false;
     private double droneLat = 0;
     private double droneLong = 0;
-    private int droneAlt =0;
-    private int droneVelocity = 0;
+    private double droneAlt =0;
+    private float droneVelocity = 0;
     private int droneHeading = 0;
     private boolean drone_arrived = false;
     //timer variables
@@ -85,12 +85,12 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         droneLong = Double.valueOf(receivedMessage);
         publishProgress("", receivedMessage + "\n");//for debugging
         //droneAlt
-        receivedMessage = readFromSocketAndSendAck();
-        droneAlt = Integer.valueOf(receivedMessage);
-        publishProgress("", receivedMessage + "\n");//for debugging
+        //receivedMessage = readFromSocketAndSendAck(); //get None because no altitide since drone not flying
+        //droneAlt = Double.valueOf(receivedMessage);
+        //publishProgress("", receivedMessage + "\n");//for debugging
         //droneVel
         receivedMessage = readFromSocketAndSendAck();
-        droneVelocity = Integer.valueOf(receivedMessage);
+        droneVelocity = Float.valueOf(receivedMessage);
         publishProgress("", receivedMessage + "\n");//for debugging
         //droneHeading
         receivedMessage = readFromSocketAndSendAck();
@@ -135,6 +135,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
             if (start) {
                 //send destWaypointNumber and phone lat and long
                 sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
+                sendSocketDataAndReceiveAck(String.valueOf(startWaypointNum));
                 sendSocketDataAndReceiveAck(String.valueOf(phoneLat));
                 sendSocketDataAndReceiveAck(String.valueOf(phoneLong));
 
@@ -152,9 +153,10 @@ public class asyncClient extends AsyncTask<Void, String, String> {
                     if (receivedMessage.equals("adv")){
                         takingOff = false;
                     } else {
-                        droneAlt = Integer.valueOf(receivedMessage);
+                        droneAlt = Double.valueOf(receivedMessage);
                     }
                 }
+
 
                 //while in flight + landing
                 String message = "";
@@ -166,26 +168,26 @@ public class asyncClient extends AsyncTask<Void, String, String> {
                     if (receivedMessage.equals("done")) {
                         inFlight = false;
                     } else {
-                        //populate and send nessarcy data
-                        //droneLat
-                        droneLat = Double.valueOf(receivedMessage);
-                        publishProgress("", receivedMessage + "\n"); //for debugging
-                        //droneLong
-                        receivedMessage = readFromSocketAndSendAck();
-                        droneLong = Double.valueOf(receivedMessage);
-                        publishProgress("", receivedMessage + "\n");//for debugging
-                        //droneAlt
-                        receivedMessage = readFromSocketAndSendAck();
-                        droneAlt = Integer.valueOf(receivedMessage);
-                        publishProgress("", receivedMessage + "\n");//for debugging
-                        //droneVel
-                        receivedMessage = readFromSocketAndSendAck();
-                        droneVelocity = Integer.valueOf(receivedMessage);
-                        publishProgress("", receivedMessage + "\n");//for debugging
-                        //droneHeading
-                        receivedMessage = readFromSocketAndSendAck();
-                        droneHeading = Integer.valueOf(receivedMessage);
-                        publishProgress("", receivedMessage + "\n");//for debugging
+//                        //populate and send nessarcy data
+//                        //droneLat
+//                        droneLat = Double.valueOf(receivedMessage);
+//                        publishProgress("", receivedMessage + "\n"); //for debugging
+//                        //droneLong
+//                        receivedMessage = readFromSocketAndSendAck();
+//                        droneLong = Double.valueOf(receivedMessage);
+//                        publishProgress("", receivedMessage + "\n");//for debugging
+//                        //droneAlt
+//                        receivedMessage = readFromSocketAndSendAck();
+//                        droneAlt = Double.valueOf(receivedMessage);
+//                        publishProgress("", receivedMessage + "\n");//for debugging
+//                        //droneVel
+//                        receivedMessage = readFromSocketAndSendAck();
+//                        droneVelocity = Float.valueOf(receivedMessage);
+//                        publishProgress("", receivedMessage + "\n");//for debugging
+//                        //droneHeading
+//                        receivedMessage = readFromSocketAndSendAck();
+//                        droneHeading = Integer.valueOf(receivedMessage);
+//                        publishProgress("", receivedMessage + "\n");//for debugging
 
 
                         //SEND SOCKET ALL COMM DATA
@@ -196,8 +198,16 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 //                        sendSocketDataAndReceiveAck(String.valueOf(phoneStopTriggered));
                         //sendSocketDataAndReceiveAck(String.valueOf(emergencyLand));
                         //send future exit button info here
+
+
+                        //xtra code to deal with matt having an loop
+
+
+
                     }
                 }
+                sendSocketDataAndReceiveAck(String.valueOf(false));//start
+                sendSocketDataAndReceiveAck(String.valueOf(true));//disconnect
 
 
             }
@@ -335,11 +345,11 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         publishProgress("", receivedMessage + "\n");//for debugging
         //droneAlt
         receivedMessage = readFromSocketAndSendAck();
-        droneAlt = Integer.valueOf(receivedMessage);
+        droneAlt = Double.valueOf(receivedMessage);
         publishProgress("", receivedMessage + "\n");//for debugging
         //droneVel
         receivedMessage = readFromSocketAndSendAck();
-        droneVelocity = Integer.valueOf(receivedMessage);
+        droneVelocity = Float.valueOf(receivedMessage);
         publishProgress("", receivedMessage + "\n");//for debugging
         //droneHeading
         receivedMessage = readFromSocketAndSendAck();
