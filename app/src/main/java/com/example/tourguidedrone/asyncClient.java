@@ -23,6 +23,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
     private String receivedMessage = "string_receivedMessage";
     //socket communication: phone to pi
     private int destWaypointNum; //waypoint index num of
+    private int startWaypointNum;
     private double phoneLat = 0;
     private double phoneLong = 0;
     private boolean phoneStartTriggered = true;
@@ -41,12 +42,13 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
 
     //thread functions-----------------------------------------------------------------------------------
-    asyncClient(TextView gpsTextView, String ipOfServer, int portNum, int destNum, TextView debugTextView ){
+    asyncClient(TextView gpsTextView, String ipOfServer, int portNum, int startNum, int destNum, TextView debugTextView ){
         this.gpsTextView = gpsTextView;
         this.ipOfServer = ipOfServer;
         this.portNum = portNum;
         this.debugTextView = debugTextView;
         this.destWaypointNum = destNum;
+        this.startWaypointNum = startNum;
     }
 
     @Override
@@ -59,6 +61,11 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
     @Override
     protected String doInBackground(Void...arg0){
+
+        //connect faded
+        //start, disconnect visable
+
+
         boolean loop = false;
         drone_arrived = false;
         emergencyLand = false;
@@ -101,6 +108,10 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         sendSocketDataAndReceiveAck(String.valueOf(false)); //exit buttons
 
         //Wait for start! -State 3: act according to stop/start button presses
+        //start has been pressed so...
+        //cancel visable
+        //start invisable
+
 
         //START BUTTON NEEDS TO BE PRESSED TO START THIS THREAD. FOR NOW ASSUME START IS ALREADY TRUE HERE
         //Needs to work like ^ for final app. can auto start for async
@@ -108,6 +119,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
 
         boolean start = true; //will be value connected to UI start button in service client
         boolean stop = false; //will be value connected to UI (aborts current mission values and waits for new mission. DO NOT stop socket
+
 
         //only do one loop since we have no functionality for stop, as stop is defined for the new stop button
         //while (loop) {
@@ -118,7 +130,8 @@ public class asyncClient extends AsyncTask<Void, String, String> {
             //send false bc exit will be false rm
             sendSocketDataAndReceiveAck(String.valueOf(false));
 
-            //FUTURE: if exit=true then exit the loop and stop socket
+            //FUTURE: if exit=true then exit the loop and stop socket, only coonect visable
+
             if (start) {
                 //send destWaypointNumber and phone lat and long
                 sendSocketDataAndReceiveAck(String.valueOf(destWaypointNum));
