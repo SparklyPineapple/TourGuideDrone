@@ -48,7 +48,7 @@ public class asyncClient extends AsyncTask<Void, String, String> {
         this.portNum = portNum;
         this.debugTextView = debugTextView;
         this.destWaypointNum = destNum;
-        this.startWaypointNum = startNum;
+        this.startWaypointNum = startNum; //startNum needs to be added to code below per Matt's specs (whenever I get those)
     }
 
     @Override
