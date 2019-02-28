@@ -4,7 +4,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int destNum = -1;
     protected Spinner selectDestList;
     private asyncClient phoneClient;
+    boolean binServTimerDone;
 
     //set up text editing for "debugtext
     TextView debugTextView;
@@ -53,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //set up scrolling on debug text
         debugTextView = findViewById(R.id.debugTextView);
-        debugTextView.setMovementMethod(new ScrollingMovementMethod());
+        //debugTextView.setMovementMethod(new ScrollingMovementMethod());
+        debugTextView.setText("");
 
         //set up and send all button listening to MainActivity.OnClick
         connectBtn = findViewById(R.id.connectButton);
@@ -147,40 +151,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.connectButton:
-
+                debugTextView.append("Connect Pressed \n");
                 if(!isServiceBound){
                     startService(socketServiceIntent);
                     bindService();
-                    socketService.setConnectIsPressed(true);
-                    debugTextView.setText("SocketService started and bound: you can now call SocketService Functions");
+                    //make sure server has time to bind. if service does not bind within .5 sec throw an error
+                    //start timer
+                    //startBinServTimer();
+                    SystemClock.sleep(2000); //wait for 1 sec
+                    debugTextView.append("Waiting for service to bind \n");
+                    //while (!isServiceBound && !binServTimerDone){}
+                    if(isServiceBound) {
+                        socketService.setConnectIsPressed(true);
+                        debugTextView.append("SocketService started and bound: you can now call SocketService Functions \n");
+                    }else{
+                        debugTextView.append("Error: service never binded \n");
+                        //error message to status txt box here
+                    }
+                    //else send error message to user (in a toaster)
                 }else{
-                    debugTextView.setText("SocketService already Bound");
+                    debugTextView.append("SocketService already Bound \n");
                 }
                 break;
             case R.id.startButton:
+                debugTextView.append("Start Pressed \n");
                 setDestNumFromScroll();
                 if(isServiceBound){
                     socketService.setStartIsPressed(true);
                 }
                 break;
             case R.id.cancelButton:
+                debugTextView.append("Cancel Pressed \n");
                 if(isServiceBound){
                     socketService.setCancelIsPressed(true);
                 }
                 break;
             case R.id.disconnectButton:
+                debugTextView.append("Disconnect Pressed \n");
                 if(isServiceBound){
                     socketService.setDisconnectIsPressed(true);
 
                     if(socketService.getThreadDestroyable()) {//todo: alternatively write in SocketService function LastMessage(){this.stopself()}
                         unbindService();
                     }
-                    debugTextView.setText("SocketService Destroyed");
+                    debugTextView.append("SocketService Destroyed");
                 }else{
-                    debugTextView.setText("SocketService already Destroyed or never stated");
+                    debugTextView.append("SocketService already Destroyed or never stated");
                 }
                 break;
-            case R.id.emergancyLandButton:
+            case  R.id.emergancyLandButton:
                 break;
         }
 
@@ -240,5 +259,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isServiceBound=false;
         }
     }
+
+     private void startBinServTimer() {
+         binServTimerDone = false;
+         new CountDownTimer(500, 500) {
+
+             public void onTick(long millisUntilFinished) {
+                 //mTextField.setText("seconds remaining: " + millisUntilFinished / 1000);
+             }
+
+             public void onFinish() {
+                 //mTextField.setText("done!");
+                 binServTimerDone = true;
+             }
+         }.start();
+     }
+
 
 }
