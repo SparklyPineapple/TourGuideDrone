@@ -112,7 +112,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }
 //        });
 
+        Thread thread = new Thread() {
 
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateGpsTextView();
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        thread.start();
+
+    }
+
+    private void updateGpsTextView(){
+        if(isServiceBound){
+            gpsTextView.setText(socketService.getLatLonString());
+        }else{
+            gpsTextView.setText("GPS: None Available");
+        }
     }
 
     @Override

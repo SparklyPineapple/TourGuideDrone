@@ -124,7 +124,7 @@ public class SocketService extends Service {
         Log.i("S_update", "in getLatLon()String");
 
         if(locationTrackServe != null){
-            return "Lat:"+locationTrackServe.getLatitude()+",  Lon:"+locationTrackServe.getLongitude()+".\n";
+            return "GPS:  Lat-"+locationTrackServe.getLatitude()+",  Lon-"+locationTrackServe.getLongitude()+".\n";
         } else{
             Log.d("S_debug", "LocationTrackServe was null");
             return "location service not available";
